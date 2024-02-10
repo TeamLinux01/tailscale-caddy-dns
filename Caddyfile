@@ -1,0 +1,9 @@
+localhost {
+	tls internal
+
+	respond "Tailscale-caddy-dns container hosting on localhost"
+}
+
+:80 {
+	respond "Tailscale-caddy-dns container hosting without TLS"
+}

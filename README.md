@@ -182,6 +182,11 @@ jf.DOMAIN-ALIAS.ts.net {
                 host makemkv.PUBLIC_DNS_NAME
         }
 
+        @nextcloud {
+                remote_ip private_ranges
+                host nextcloud.PUBLIC_DNS_NAME
+        }
+
         handle @audiobookshelf {
                 reverse_proxy http://audiobookshelf.ix-audiobookshelf.svc.cluster.local:10223
         }
@@ -202,6 +207,15 @@ jf.DOMAIN-ALIAS.ts.net {
                 reverse_proxy http://makemkv.ix-makemkv.svc.cluster.local:10180
         }
 
+        handle @nextcloud {
+                rewrite /.well-known/carddav /remote.php/dav
+                rewrite /.well-known/caldav /remote.php/dav
+
+                reverse_proxy http://nextcloud.ix-nextcloud.svc.cluster.local
+                header {
+                        Strict-Transport-Security max-age=31536000;
+                }
+        }
         handle {
                 abort
         }

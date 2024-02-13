@@ -47,10 +47,25 @@ services:
     container_name: proxy
     hostname: proxy
     environment:
-      # Optional: Used for Cloudflare DNS to get Let's Encrypt TLS certificate
+      # Optional: Used for Cloudflare DNS to get Let's Encrypt TLS certificate.
       - CLOUDFLARE_AUTH_TOKEN=${CLOUDFLARE_AUTH_TOKEN}
       # Optional: Used for DuckDNS to get Let's Encrypt TLS certificate; for DNS challenge, server must be publicly accessible.
       - DUCKDNS_API_TOKEN=${DUCKDNS_API_TOKEN}
+
+      # Optional: Use if you need to change the default route in the container, usually defaults to the docker network, but needs to change if you expose a physical NIC with dedicated IP to the container. Set to "true" if override is needed.
+      - OVERRIDE_DEFAULT_ROUTE="false"
+      # Optional: Set to the Gateway IP for the override default route. An example would be setting to "192.168.0.1" for a exposed NIC with dedicated IP on a 192.168.0.0/24 network and the router address is 192.168.0.1.
+      - GATEWAY_IP=""
+      # Optional: Set to the name of the network interface that the exposed physical NIC is named in the container. TrueNAS SCALE uses "net0", "net1", etc... for each network card in the machine.
+      - LAN_NIC=""
+
+      # Optional: Use if you are using on a TrueNAS SCALE system for it to access the Service Network on the docker/kubernetes network, which includes the cluster DNS server address. If this is not added, the container will not be able to resolve other containers names.
+      - TRUENAS_SYSTEM="false"
+      # Optional: Use if you are using on a TrueNAS SCALE system, the default Service Network is "172.17.0.0/16".
+      - TRUENAS_SERVICE_NETWORK=""
+      # Optional: Use if you are using on a TrueNAS SCALE system, the default Cluster gateway is "172.16.0.1".
+      - TRUENAS_CLUSTER_GATEWAY_IP=""
+
       # TUN device name, or "userspace-networking" as a magic value to not use kernel support and do everything in-process. You can use "tailscale0" if the container has direct access to hardware.
       - TSD_TUN=userspace-networking
       # UDP port to listen on for peer-to-peer traffic; 0 means to auto-select. Port 41641 is usually the default.
@@ -58,6 +73,7 @@ services:
       # Optional: Extra arguments for tailscaled.
       - TSD_EXTRA_ARGS=
       # Name that will show up on Tailnet.
+
       - TS_HOSTNAME=proxy
       - TS_AUTH_KEY=${TS_AUTH_KEY}
       # Optional: Extra arguments for tailscale. Used for OAuth authentication.
@@ -234,23 +250,41 @@ Image Tag: latest
 
 # Container Environment Variables 
 Environment Variable Name: CLOUDFLARE_AUTH_TOKEN
-Environment Variable Value: example
+Environment Variable Value: *example*
 
 Environment Variable Name: TS_AUTH_KEY
-Environment Variable Name:  tskey-auth-exampleCNTRL-random
+Environment Variable Value: *tskey-auth-exampleCNTRL-random*
 
 Environment Variable Name: TS_HOSTNAME
-Environment Variable Name: jf
+Environment Variable Value: jf # Use the name you would like the machine be called on the tailnet
 
 Environment Variable Name: TSD_TUN
-Environment Variable Name: tailscale0
+Environment Variable Value: tailscale0
+
+Environment Variable Name: OVERRIDE_DEFAULT_ROUTE
+Environment Variable Value: true
+
+Environment Variable Name: GATEWAY_IP
+Environment Variable Value: 10.0.0.1 # Use the router's IP on the LAN.
+
+Environment Variable Name: LAN_NIC
+Environment Variable Value: net1 # I am using my 2nd NIC on my server, it might be called net0 if you only have one NIC
+
+Environment Variable Name: TRUENAS_SYSTEM
+Environment Variable Value: true
+
+Environment Variable Name: TRUENAS_SERVICE_NETWORK
+Environment Variable Value: 172.17.0.0/16 # TrueNAS default service network setting
+
+Environment Variable Name: TRUENAS_CLUSTER_GATEWAY_IP
+Environment Variable Value: 172.16.0.1 # TrueNAS default cluster gateway setting
 
 # Networking
 ## Add external interface
 
-Host Interface: enp5s0f1 # Use the interface for your server
+Host Interface: enp5s0f1 # Use the interface for your server.
 IPAM Type: Use Static IP
-Static IP: 10.0.0.4/8 # Use whatever unused IP address on your network
+Static IP: 10.0.0.4/8 # Use whatever unused IP address/subnet on your network
 
 DNS Policy: For Pods running with hostNetwork and wanting to prioritise internal kubernetes DNS should make use of this policy.
 

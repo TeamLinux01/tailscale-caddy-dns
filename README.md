@@ -88,7 +88,7 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
-      - $PWD/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - proxy_data:/data
       - proxy_config:/config
       - /dev/net/tun:/dev/net/tun

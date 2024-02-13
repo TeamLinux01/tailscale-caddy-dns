@@ -52,23 +52,23 @@ services:
       # Optional: Used for DuckDNS to get Let's Encrypt TLS certificate; for DNS challenge, server must be publicly accessible.
       - DUCKDNS_API_TOKEN=${DUCKDNS_API_TOKEN}
 
-      # Optional: Use if you need to change the default route in the container, usually defaults to the docker network, but needs to change if you expose a physical NIC with dedicated IP to the container. Set to "true" if override is needed.
+      # Optional: Use if you need to change the default route in the container, usually defaults to the docker network, but needs to change if you expose a physical NIC with dedicated IP to the container. Set to "true" if override is needed. "false" value is included in the image.
       - OVERRIDE_DEFAULT_ROUTE="false"
       # Optional: Set to the Gateway IP for the override default route. An example would be setting to "192.168.0.1" for a exposed NIC with dedicated IP on a 192.168.0.0/24 network and the router address is 192.168.0.1.
-      - GATEWAY_IP=""
+      - GATEWAY_IP=
       # Optional: Set to the name of the network interface that the exposed physical NIC is named in the container. TrueNAS SCALE uses "net0", "net1", etc... for each network card in the machine.
-      - LAN_NIC=""
+      - LAN_NIC=
 
-      # Optional: Use if you are using on a TrueNAS SCALE system for it to access the Service Network on the docker/kubernetes network, which includes the cluster DNS server address. If this is not added, the container will not be able to resolve other containers names.
+      # Optional: Use if you are using on a TrueNAS SCALE system for it to access the Service Network on the docker/kubernetes network, which includes the cluster DNS server address. If this is not added, the container will not be able to resolve other containers names. "false" value is included in the image.
       - TRUENAS_SYSTEM="false"
       # Optional: Use if you are using on a TrueNAS SCALE system, the default Service Network is "172.17.0.0/16".
-      - TRUENAS_SERVICE_NETWORK=""
+      - TRUENAS_SERVICE_NETWORK=
       # Optional: Use if you are using on a TrueNAS SCALE system, the default Cluster gateway is "172.16.0.1".
-      - TRUENAS_CLUSTER_GATEWAY_IP=""
+      - TRUENAS_CLUSTER_GATEWAY_IP=
 
-      # TUN device name, or "userspace-networking" as a magic value to not use kernel support and do everything in-process. You can use "tailscale0" if the container has direct access to hardware.
+      # TUN device name, or "userspace-networking" as a magic value to not use kernel support and do everything in-process. You can use "tailscale0" if the container has direct access to hardware. "userspace-networking" value is included in the image.
       - TSD_TUN=userspace-networking
-      # UDP port to listen on for peer-to-peer traffic; 0 means to auto-select. Port 41641 is usually the default.
+      # UDP port to listen on for peer-to-peer traffic; 0 means to auto-select. Port 41641 is the default that tailscaled will try to use. "0" value is included in the image.
       - TSD_PORT=0
       # Optional: Extra arguments for tailscaled.
       - TSD_EXTRA_ARGS=

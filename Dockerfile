@@ -22,6 +22,9 @@ COPY ./Caddyfile /etc/caddy/Caddyfile
 
 ENV XDG_CONFIG_HOME /config
 ENV XDG_DATA_HOME /data
+ENV OVERRIDE_DEFAULT_ROUTE "false"
+ENV GATEWAY_IP ""
+ENV LAN_NIC ""
 ENV TSD_TUN userspace-networking
 ENV TSD_PORT 0
 ENV TSD_EXTRA_ARGS ""

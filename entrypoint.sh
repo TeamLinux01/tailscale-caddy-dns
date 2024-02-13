@@ -2,6 +2,11 @@
 
 set -eux
 
+if [ $OVERRIDE_DEFAULT_ROUTE = "true" ]; then
+  ip route delete default
+  ip route add default via $GATEWAY_IP dev $LAN_NIC
+fi
+
 tailscaled --tun=$TSD_TUN --statedir=/config/tailscale --port=${TSD_PORT} ${TSD_EXTRA_ARGS} &
 tailscale up --hostname=$TS_HOSTNAME --authkey=$TS_AUTH_KEY ${TS_EXTRA_ARGS}
 

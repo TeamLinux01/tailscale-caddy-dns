@@ -32,7 +32,59 @@ https://login.tailscale.com/admin/settings/keys Generate an auth key. I like to 
 
 To set host overrides on OPNsense: https://docs.opnsense.org/manual/unbound.html#host-override-settings
 
+## An example docker run command:
+
+Run `docker volume create --name=proxy_data`, `docker volume create --name=proxy_config` to create the volumes.
+
+Create an `.env` file:
+
+```
+CLOUDFLARE_AUTH_TOKEN=example
+DUCKDNS_API_TOKEN=example
+TS_AUTH_KEY=tskey-auth-exampleCNTRL-random
+```
+
+Docker command:
+
+```
+set -a && \
+. .env && \
+set +a && \
+docker run --detach --rm \
+  --name=proxy \
+  --network=proxy-network \
+  --cap-add=net_admin \
+  --cap-add=sys_module \
+  --publish=80:80 \
+  --publish=443:443 \
+  --publish=443:443/udp \
+  -e=CLOUDFLARE_AUTH_TOKEN=${CLOUDFLARE_AUTH_TOKEN} \
+  -e=TS_AUTH_KEY=${TS_AUTH_KEY} \
+  -e=TS_HOSTNAME=proxy \
+  -device=/dev/net/tun:/dev/net/tun \
+  --mount=type=bind,source=$PWD/Caddyfile,target=/etc/caddy/Caddyfile \
+  --volume=proxy_data:/data \
+  --volume=proxy_config:/config \
+  teamlinux01/tailscale-caddy-dns
+```
+
+The `set -a` command block will load the enviromental variables onto the host and pass them into the container. If you don't want to set them via a file, just replace the `${}` text with the keys. *NOTE: These instructions are meant for a Bash shell.*
+
+This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new contianer can be started and it keep the same tailscale auth/caddy TLS data.
+
 ## An example docker-compose file:
+
+Run `docker volume create --name=proxy_data`, `docker volume create --name=proxy_config` to create the volumes.
+
+Create an `.env` file:
+
+```
+CLOUDFLARE_AUTH_TOKEN=example
+DUCKDNS_API_TOKEN=example
+TS_AUTH_KEY=tskey-auth-exampleCNTRL-random
+```
+
+Create `compose.yml` file:
 
 ```
 version: "3.8"
@@ -98,14 +150,6 @@ services:
 volumes:
   proxy_data:
   proxy_config:
-```
-
-`docker volume create --name=proxy_data`, `docker volume create --name=proxy_config` to create the volumes and enter the `TS_AUTH_KEY` in the compose file or in `.env` file before running `docker-compose up`.
-
-```
-CLOUDFLARE_AUTH_TOKEN=example
-DUCKDNS_API_TOKEN=example
-TS_AUTH_KEY=tskey-auth-exampleCNTRL-random
 ```
 
 This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network.

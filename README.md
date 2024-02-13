@@ -83,6 +83,7 @@ services:
     cap_add:
       - net_admin
       - sys_module
+    # ports are only required if you want to host the server on the LAN. No ports are required to be opened to access over the tailnet.
     ports:
       - "80:80"
       - "443:443"

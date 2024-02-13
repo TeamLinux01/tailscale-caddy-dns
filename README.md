@@ -34,8 +34,6 @@ To set host overrides on OPNsense: https://docs.opnsense.org/manual/unbound.html
 
 ## An example docker run command:
 
-Run `docker volume create --name=proxy_data`, `docker volume create --name=proxy_config` to create the volumes.
-
 Create an `.env` file:
 
 ```
@@ -70,11 +68,9 @@ docker run --detach --rm \
 
 The `set -a` command block will load the enviromental variables onto the host and pass them into the container. If you don't want to set them via a file, just replace the `${}` text with the keys. *NOTE: These instructions are meant for a Bash shell.*
 
-This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new contianer can be started and it keep the same tailscale auth/caddy TLS data.
+This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new contianer can be started and it will keep the same tailscale auth/caddy TLS data.
 
 ## An example docker-compose file:
-
-Run `docker volume create --name=proxy_data`, `docker volume create --name=proxy_config` to create the volumes.
 
 Create an `.env` file:
 
@@ -152,7 +148,7 @@ volumes:
   proxy_config:
 ```
 
-This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network.
+Run `docker-compose up`. This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network.
 
 ## Example Caddyfile:
 

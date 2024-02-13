@@ -32,9 +32,9 @@ https://login.tailscale.com/admin/settings/keys Generate an auth key. I like to 
 
 To set host overrides on OPNsense: https://docs.opnsense.org/manual/unbound.html#host-override-settings
 
-## An example docker run command:
+# To begin with either a docker run command or docker-compose, create these two files and run the docker network create command:
 
-Create an `.env` file:
+`.env`:
 
 ```
 CLOUDFLARE_AUTH_TOKEN=example
@@ -42,7 +42,53 @@ DUCKDNS_API_TOKEN=example
 TS_AUTH_KEY=tskey-auth-exampleCNTRL-random
 ```
 
-Docker command:
+`Caddyfile`:
+
+```
+host.lan {
+        tls internal
+
+        reverse_proxy https://other-machine-name.domain-alias.ts.net {
+                header_up Host other-machine-name.domain-alias.ts.net
+        }
+}
+dns-host.public-domain-name {
+        tls {
+                dns cloudflare {env.CLOUDFLARE_AUTH_TOKEN}
+        }
+
+        reverse_proxy https://other-machine-name.domain-alias.ts.net {
+                header_up Host other-machine-name.domain-alias.ts.net
+        }
+}
+dns-host.duckdns.org {
+        tls {
+                dns duckdns {env.DUCKDNS_API_TOKEN}
+        }
+
+        reverse_proxy https://other-machine-name.domain-alias.ts.net {
+                header_up Host other-machine-name.domain-alias.ts.net
+        }
+}
+proxy.domain-alias.ts.net {
+        tls {
+                get_certificate tailscale
+        }
+
+        reverse_proxy https://host.lan_or_dns-host.public-domain-name {
+                header_up Host host.lan_or_dns-host.public-domain-name
+        }
+}
+subdomain.dns-host.public-domain-name {
+        reverse_proxy http://other-container:port
+}
+```
+
+Run `docker network create proxy-network` to create the proxy network.
+
+## An example docker run command:
+
+Docker command in Bash:
 
 ```
 set -a && \
@@ -66,21 +112,13 @@ docker run --detach --rm \
   teamlinux01/tailscale-caddy-dns
 ```
 
-The `set -a` command block will load the enviromental variables onto the host and pass them into the container. If you don't want to set them via a file, just replace the `${}` text with the keys. *NOTE: These instructions are meant for a Bash shell.*
+The `set -a` command block will load the enviromental variables onto the host and pass them into the container. If you don't want to set them via a file, just replace the `${}` text with the keys.
 
 This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new contianer can be started and it will keep the same tailscale auth/caddy TLS data.
 
 ## An example docker-compose file:
 
-Create an `.env` file:
-
-```
-CLOUDFLARE_AUTH_TOKEN=example
-DUCKDNS_API_TOKEN=example
-TS_AUTH_KEY=tskey-auth-exampleCNTRL-random
-```
-
-Create `compose.yml` file:
+`compose.yml`:
 
 ```
 version: "3.8"
@@ -149,48 +187,6 @@ volumes:
 ```
 
 Run `docker-compose up`. This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network.
-
-## Example Caddyfile:
-
-```
-host.lan {
-        tls internal
-
-        reverse_proxy https://other-machine-name.domain-alias.ts.net {
-                header_up Host other-machine-name.domain-alias.ts.net
-        }
-}
-dns-host.public-domain-name {
-        tls {
-                dns cloudflare {env.CLOUDFLARE_AUTH_TOKEN}
-        }
-
-        reverse_proxy https://other-machine-name.domain-alias.ts.net {
-                header_up Host other-machine-name.domain-alias.ts.net
-        }
-}
-dns-host.duckdns.org {
-        tls {
-                dns duckdns {env.DUCKDNS_API_TOKEN}
-        }
-
-        reverse_proxy https://other-machine-name.domain-alias.ts.net {
-                header_up Host other-machine-name.domain-alias.ts.net
-        }
-}
-proxy.domain-alias.ts.net {
-        tls {
-                get_certificate tailscale
-        }
-
-        reverse_proxy https://host.lan_or_dns-host.public-domain-name {
-                header_up Host host.lan_or_dns-host.public-domain-name
-        }
-}
-subdomain.dns-host.public-domain-name {
-        reverse_proxy http://other-container:port
-}
-```
 
 # TrueNAS SCALE settings
 

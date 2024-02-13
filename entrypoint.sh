@@ -5,7 +5,7 @@ set -eux
 if [ $OVERRIDE_DEFAULT_ROUTE = "true" ]; then
   ip route delete default
   ip route add default via $GATEWAY_IP dev $LAN_NIC
-  if [ $TRUENAS_SYSTEM ] = "true" ]; then
+  if [ $TRUENAS_SYSTEM = "true" ]; then
     ip route add $TRUNENAS_SERVICE_NETWORK via $TRUENAS_CLUSTER_GATEWAY_IP dev eth0
   fi
 fi

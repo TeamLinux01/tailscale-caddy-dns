@@ -32,7 +32,7 @@ https://login.tailscale.com/admin/settings/keys Generate an auth key. I like to 
 
 To set host overrides on OPNsense: https://docs.opnsense.org/manual/unbound.html#host-override-settings
 
-# To begin with either a docker run command or docker-compose, create these two files and run the docker network create command:
+# Before exicuting the docker run command, create these two files and run the docker network create command. For docker compose, only create the two files:
 
 `.env`:
 
@@ -116,7 +116,7 @@ The `set -a` command block will load the enviromental variables onto the host an
 
 This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new contianer can be started and it will keep the same tailscale auth/caddy TLS data.
 
-## An example docker-compose file:
+## An example docker compose file:
 
 `compose.yml`:
 

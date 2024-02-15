@@ -31,7 +31,9 @@ ENV TRUENAS_CLUSTER_GATEWAY_IP ""
 ENV TSD_TUN userspace-networking
 ENV TSD_PORT 0
 ENV TSD_EXTRA_ARGS ""
+ENV TS_ENABLE "true"
 ENV TS_HOSTNAME tailscale-caddy-dns
+ENV TS_AUTH_KEY="change_me"
 ENV TS_EXTRA_ARGS ""
 
 WORKDIR /srv

@@ -10,8 +10,10 @@ if [ $OVERRIDE_DEFAULT_ROUTE = "true" ]; then
   fi
 fi
 
-tailscaled --tun=$TSD_TUN --statedir=/config/tailscale --port=${TSD_PORT} ${TSD_EXTRA_ARGS} &
-tailscale up --hostname=$TS_HOSTNAME --authkey=$TS_AUTH_KEY ${TS_EXTRA_ARGS}
+if [ $TS_ENABLE = "true" ]; then
+  tailscaled --tun=$TSD_TUN --statedir=/config/tailscale --port=${TSD_PORT} ${TSD_EXTRA_ARGS} &
+  tailscale up --hostname=$TS_HOSTNAME --authkey=$TS_AUTH_KEY ${TS_EXTRA_ARGS}
+fi
 
 caddy run \
   --config /etc/caddy/Caddyfile \

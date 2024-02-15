@@ -160,7 +160,10 @@ services:
       - TSD_EXTRA_ARGS=
       # Name that will show up on Tailnet.
 
+      # Optional: Enable tailscaled and tailscale service. "true" value is included in the image.
+      - TS_ENABLE=true
       - TS_HOSTNAME=proxy
+      # Optional only if TS_ENABLE is not set to "true". The Tailscale Auth key that is generated at https://login.tailscale.com/admin/settings/keys
       - TS_AUTH_KEY=${TS_AUTH_KEY}
       # Optional: Extra arguments for tailscale. Used for OAuth authentication.
       - TS_EXTRA_ARGS=

@@ -42,48 +42,6 @@ DUCKDNS_API_TOKEN=example
 TS_AUTH_KEY=tskey-auth-exampleCNTRL-random
 ```
 
-`Caddyfile`:
-
-```
-host.lan {
-        tls internal
-
-        reverse_proxy https://other-machine-name.domain-alias.ts.net {
-                header_up Host other-machine-name.domain-alias.ts.net
-        }
-}
-dns-host.public-domain-name {
-        tls {
-                dns cloudflare {env.CLOUDFLARE_AUTH_TOKEN}
-        }
-
-        reverse_proxy https://other-machine-name.domain-alias.ts.net {
-                header_up Host other-machine-name.domain-alias.ts.net
-        }
-}
-dns-host.duckdns.org {
-        tls {
-                dns duckdns {env.DUCKDNS_API_TOKEN}
-        }
-
-        reverse_proxy https://other-machine-name.domain-alias.ts.net {
-                header_up Host other-machine-name.domain-alias.ts.net
-        }
-}
-proxy.domain-alias.ts.net {
-        tls {
-                get_certificate tailscale
-        }
-
-        reverse_proxy https://host.lan_or_dns-host.public-domain-name {
-                header_up Host host.lan_or_dns-host.public-domain-name
-        }
-}
-subdomain.dns-host.public-domain-name {
-        reverse_proxy http://other-container:port
-}
-```
-
 Run `docker network create proxy-network` to create the proxy network.
 
 ## An example docker run command:
@@ -105,8 +63,9 @@ docker run --detach --rm \
   -e=CLOUDFLARE_AUTH_TOKEN=${CLOUDFLARE_AUTH_TOKEN} \
   -e=TS_AUTH_KEY=${TS_AUTH_KEY} \
   -e=TS_HOSTNAME=proxy \
+  -e=CADDY_INGRESS_NETWORKS=proxy_network \
   -device=/dev/net/tun:/dev/net/tun \
-  --mount=type=bind,source=$PWD/Caddyfile,target=/etc/caddy/Caddyfile \
+  -volume=/var/run/docker.sock:/var/run/docker.sock \
   --volume=proxy_data:/data \
   --volume=proxy_config:/config \
   teamlinux01/tailscale-caddy-dns
@@ -129,7 +88,7 @@ networks:
 
 services:
   proxy:
-    image: teamlinux01/tailscale-caddy-dns:latest
+    image: teamlinux01/tailscale-caddy-dns:auto-proxy
     container_name: proxy
     hostname: proxy
     environment:
@@ -167,6 +126,9 @@ services:
       - TS_AUTH_KEY=${TS_AUTH_KEY}
       # Optional: Extra arguments for tailscale. Used for OAuth authentication.
       - TS_EXTRA_ARGS=
+
+      # Watches the docker network "proxy_network" for labels.
+      - CADDY_INGRESS_NETWORKS=proxy_network
     networks:
       - proxy-network
     cap_add:
@@ -178,10 +140,10 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - proxy_data:/data
       - proxy_config:/config
       - /dev/net/tun:/dev/net/tun
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
 volumes:
@@ -191,168 +153,6 @@ volumes:
 
 Run `docker-compose up`. This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network.
 
-# TrueNAS SCALE settings
-
-## TrueNAS SCALE Caddyfile Example
-
-```
-{
-        admin off
-}
-
-jf.DOMAIN-ALIAS.ts.net {
-        tls {
-                get_certificate tailscale
-        }
-
-        reverse_proxy http://jellyfin.ix-jellyfin.svc.cluster.local:8096
-}
-
-*.PUBLIC_DNS_NAME {
-        tls {
-                dns cloudflare {env.CLOUDFLARE_AUTH_TOKEN}
-        }
-
-        @audiobookshelf {
-                remote_ip private_ranges
-                host audiobookshelf.PUBLIC_DNS_NAME
-        }
-
-        @handbrake {
-                remote_ip private_ranges
-                host handbrake.PUBLIC_DNS_NAME
-        }
-
-        @jellyfin {
-                remote_ip private_ranges
-                host jellyfin.PUBLIC_DNS_NAME
-        }
-
-        @librespeed {
-                remote_ip private_ranges
-                host librespeed.PUBLIC_DNS_NAME
-        }
-
-        @makemkv {
-                remote_ip private_ranges
-                host makemkv.PUBLIC_DNS_NAME
-        }
-
-        @nextcloud {
-                remote_ip private_ranges
-                host nextcloud.PUBLIC_DNS_NAME
-        }
-
-        handle @audiobookshelf {
-                reverse_proxy http://audiobookshelf.ix-audiobookshelf.svc.cluster.local:10223
-        }
-
-        handle @handbrake {
-                reverse_proxy http://handbrake.ix-handbrake.svc.cluster.local:10053
-        }
-
-        handle @jellyfin {
-                reverse_proxy http://jellyfin.ix-jellyfin.svc.cluster.local:8096
-        }
-
-        handle @librespeed {
-                reverse_proxy http://librespeed.ix-librespeed.svc.cluster.local:10016
-        }
-
-        handle @makemkv {
-                reverse_proxy http://makemkv.ix-makemkv.svc.cluster.local:10180
-        }
-
-        handle @nextcloud {
-                rewrite /.well-known/carddav /remote.php/dav
-                rewrite /.well-known/caldav /remote.php/dav
-
-                reverse_proxy http://nextcloud.ix-nextcloud.svc.cluster.local
-                header {
-                        Strict-Transport-Security max-age=31536000;
-                }
-        }
-
-        handle {
-                abort
-        }
-}
-```
-
-Add extra IP addresses using spaces to allow `remote_ip` to access from tailnet devices or remove `private_ranges` to deny access to LAN devices. Example: `remote_ip private_ranges 100.X.X.X 100.X.X.Y` to add 2 tailnet devices. Remove the entry completely to allow access from any device that can resolve the DNS and has access to the servers IP addresses and HTTP/HTTPS ports.
-
-## TrueNAS SCALE docker settings
-
-```
-# Container Images
-Image repository: teamlinux01/tailscale-caddy-dns
-Image Tag: latest
-
-# Container Environment Variables 
-Environment Variable Name: CLOUDFLARE_AUTH_TOKEN
-Environment Variable Value: *example*
-
-Environment Variable Name: TS_AUTH_KEY
-Environment Variable Value: *tskey-auth-exampleCNTRL-random*
-
-Environment Variable Name: TS_HOSTNAME
-Environment Variable Value: jf # Use the name you would like the machine be called on the tailnet
-
-Environment Variable Name: TSD_TUN
-Environment Variable Value: tailscale0
-
-Environment Variable Name: OVERRIDE_DEFAULT_ROUTE
-Environment Variable Value: true
-
-Environment Variable Name: GATEWAY_IP
-Environment Variable Value: 10.0.0.1 # Use the router's IP on the LAN.
-
-Environment Variable Name: LAN_NIC
-Environment Variable Value: net1 # I am using my 2nd NIC on my server, it might be called net0 if you only have one NIC
-
-Environment Variable Name: TRUENAS_SYSTEM
-Environment Variable Value: true
-
-Environment Variable Name: TRUENAS_SERVICE_NETWORK
-Environment Variable Value: 172.17.0.0/16 # TrueNAS default service network setting
-
-Environment Variable Name: TRUENAS_CLUSTER_GATEWAY_IP
-Environment Variable Value: 172.16.0.1 # TrueNAS default cluster gateway setting
-
-# Networking
-## Add external interface
-
-Host Interface: enp5s0f1 # Use the interface for your server.
-IPAM Type: Use Static IP
-Static IP: 10.0.0.4/8 # Use whatever unused IP address/subnet on your network
-
-DNS Policy: For Pods running with hostNetwork and wanting to prioritise internal kubernetes DNS should make use of this policy.
-
-#Storage
-## Add Host Path Volumes
-
-Host Path: /mnt/data/Apps/proxy/Caddyfile # Use where you want the Caddyfile
-Mount Path: /etc/caddy/Caddyfile
-Read Only: true
-
-## Add Volumes
-
-Mount Path: /data
-Dataset Name: proxy-data
-
-Mount Path:/config
-Dataset Name: proxy-config
-
-#  Workload Details 
-##  Security Context 
-
- Privileged Mode: true
-
-## Add Capabilities
-
-Add Capability: net_admin
-Add Capability: sys_module
-```
 # Extra things to consider
 
 ## OPNsense router settings that can cause issues

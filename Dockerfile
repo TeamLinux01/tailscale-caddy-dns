@@ -1,6 +1,7 @@
 FROM caddy:2.7-builder AS builder
 
 RUN xcaddy build \
+  --with github.com/lucaslorentz/caddy-docker-proxy/v2 \
   --with github.com/caddy-dns/cloudflare \
   --with github.com/caddy-dns/duckdns
 
@@ -11,14 +12,12 @@ mkdir -p \
 /config/tailscale \
 /config/caddy \
 /data/caddy \
-/etc/caddy \
 /usr/share/caddy \
 /lib/modules \
 ;
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 COPY ./entrypoint.sh /entrypoint.sh
-COPY ./Caddyfile /etc/caddy/Caddyfile
 
 ENV XDG_CONFIG_HOME /config
 ENV XDG_DATA_HOME /data

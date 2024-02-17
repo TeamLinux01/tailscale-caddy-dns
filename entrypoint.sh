@@ -15,7 +15,4 @@ if [ $TS_ENABLE = "true" ]; then
   tailscale up --hostname=$TS_HOSTNAME --authkey=$TS_AUTH_KEY ${TS_EXTRA_ARGS}
 fi
 
-caddy run \
-  --config /etc/caddy/Caddyfile \
-  --adapter caddyfile \
-  --watch
+caddy docker-proxy

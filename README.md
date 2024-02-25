@@ -1,8 +1,14 @@
 # This container connects to tailscale and runs a caddy web server. This is useful if you want to put a website on a LAN and a tailnet at the same time or reverse proxy web services in and out of a tailnet. When setting an IP address for a public DNS entry, use the machine's tailscale IP addresses.
 
-### A warning when using DuckDNS, the DNS challenge requires that the server be publicly accessible, so it cannot be used on a tailnet. I will leave in the plug-in as a way of hosting directly on the Internet.
+> ⚠️ Warning
+>
+> When using DuckDNS, the DNS challenge requires that the server be publicly accessible, so it cannot be used on a tailnet. I will leave in the plug-in as a way of hosting directly on the Internet.
 
-## It is highly recommended that you configure Tailscale before launching the container.
+## Configure Tailscale
+
+> ⚠️ Warning
+>
+> It is require to do this before you start the containers.
 
 https://login.tailscale.com/admin/dns Confirm a tailnet name, enable MagicDNS and HTTPS Certificates.
 
@@ -28,11 +34,21 @@ https://login.tailscale.com/admin/settings/keys Generate an auth key. I like to 
 
 ---
 
-## DNS overrides from your LAN DNS server are require to resolve service names on your LAN. Overrides also work nicely with public DNS records, as that allows the service to be resolved locally when on the LAN and over the tailnet when away from the LAN
+### DNS overrides
+
+> ⚠️ Warning
+>
+> These are require to resolve service names on your LAN. Overrides also work nicely with public DNS records, as that allows the service to be resolved locally when on the LAN and over the tailnet when away from the LAN.
 
 To set host overrides on OPNsense: https://docs.opnsense.org/manual/unbound.html#host-override-settings
 
-# Before exicuting the docker run command, create these two files and run the docker network create command. For docker compose, only create the two files:
+## Configuration files
+
+> ⚠️ Warning
+>
+> Before executing the docker run command, create these two files and run the docker network create command.
+>
+> Before executing the docker compose command, only create these two files:
 
 `.env`:
 
@@ -44,7 +60,7 @@ TS_AUTH_KEY=tskey-auth-exampleCNTRL-random
 
 Run `docker network create proxy-network` to create the proxy network.
 
-## An example docker run command:
+### An example docker run command (internal docker network):
 
 Docker command in Bash:
 
@@ -71,11 +87,11 @@ docker run --detach --rm \
   teamlinux01/tailscale-caddy-dns
 ```
 
-The `set -a` command block will load the enviromental variables onto the host and pass them into the container. If you don't want to set them via a file, just replace the `${}` text with the keys.
+The `set -a` command block will load the environmental variables onto the host and pass them into the container. If you don't want to set them via a file, just replace the `${}` text with the keys.
 
-This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new contianer can be started and it will keep the same tailscale auth/caddy TLS data.
+This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new container can be started and it will keep the same tailscale auth/caddy TLS data.
 
-## An example docker compose file:
+### An example docker compose file (internal docker network):
 
 `compose.yml`:
 
@@ -89,8 +105,7 @@ networks:
 services:
   proxy:
     image: teamlinux01/tailscale-caddy-dns:auto-proxy
-    container_name: proxy
-    hostname: proxy
+    container_name: caddy
     environment:
       # Optional: Used for Cloudflare DNS to get Let's Encrypt TLS certificate.
       - CLOUDFLARE_AUTH_TOKEN=${CLOUDFLARE_AUTH_TOKEN}
@@ -155,6 +170,8 @@ Run `docker-compose up`. This will create a container that will join the tailnat
 
 # Extra things to consider
 
-## OPNsense router settings that can cause issues
-
-If you are using public DNS entries for your tailnet machines, remove the `100.64.0.0/10` network from the Unbound DNS `Rebind protection networks` settings: https://docs.opnsense.org/manual/unbound.html#advanced
+> ⚠️ Warning
+>
+> Unbound DNS setting `Rebind protection networks` in OPNsense can cause issues if you are using public DNS entries for your tailnet machines.
+>
+> To remove the `100.64.0.0/10` network from the Unbound DNS `Rebind protection networks` settings go here: https://docs.opnsense.org/manual/unbound.html#advanced

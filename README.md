@@ -130,8 +130,7 @@ networks:
 services:
   proxy:
     image: teamlinux01/tailscale-caddy-dns:latest
-    container_name: proxy
-    hostname: proxy
+    container_name: caddy
     environment:
       # Optional: Used for Cloudflare DNS to get Let's Encrypt TLS certificate.
       - CLOUDFLARE_AUTH_TOKEN=${CLOUDFLARE_AUTH_TOKEN}
@@ -190,6 +189,65 @@ volumes:
 ```
 
 Run `docker-compose up`. This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network.
+
+# Host networking of the container
+
+> ⚠️ Warning
+>
+> Do not forget to open the firewall for ports 80 and 443 on the host.
+
+To open the ports on Fedora server, run:
+
+```bash
+sudo firewall-cmd --permanent --add-service=http && sudo firewall-cmd --permanent --add-service=https
+```
+
+To close the ports again on Fedora server, run:
+
+```bash
+sudo firewall-cmd --permanent --remove-service=http && sudo firewall-cmd --permanent --remove-service=https
+```
+
+## An example docker compose file:
+
+`compose.yml`:
+
+```
+version: "3.8"
+
+services:
+  proxy:
+    image: teamlinux01/tailscale-caddy-dns:latest
+    container_name: caddy
+    environment:
+      - CLOUDFLARE_AUTH_TOKEN=${CLOUDFLARE_AUTH_TOKEN}
+      - TSD_TUN=tailscale0
+      - TS_HOSTNAME=proxy
+      - TS_AUTH_KEY=${TS_AUTH_KEY}
+    network_mode: "host"
+    cap_add:
+      - net_admin
+      - sys_module
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - proxy_data:/data
+      - proxy_config:/config
+      - /dev/net/tun:/dev/net/tun
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
+    restart: unless-stopped
+
+volumes:
+  proxy_data:
+  proxy_config:
+```
+
+> ⚠️ Warning
+>
+> The tailscale-caddy-dns container will not be able to access other docker containers via the internal network, all containers will have to publish the ports they use.
+>
+> I recommend using `127.0.0.1:`port or `:::`port to publish only to the loopback address.
+>
+> Use `reverse_proxy localhost:`port to establish the connection.
 
 # TrueNAS SCALE settings
 
@@ -292,15 +350,6 @@ Image Tag: latest
 Environment Variable Name: CLOUDFLARE_AUTH_TOKEN
 Environment Variable Value: *example*
 
-Environment Variable Name: TS_AUTH_KEY
-Environment Variable Value: *tskey-auth-exampleCNTRL-random*
-
-Environment Variable Name: TS_HOSTNAME
-Environment Variable Value: jf # Use the name you would like the machine be called on the tailnet
-
-Environment Variable Name: TSD_TUN
-Environment Variable Value: tailscale0
-
 Environment Variable Name: OVERRIDE_DEFAULT_ROUTE
 Environment Variable Value: true
 
@@ -318,6 +367,15 @@ Environment Variable Value: 172.17.0.0/16 # TrueNAS default service network sett
 
 Environment Variable Name: TRUENAS_CLUSTER_GATEWAY_IP
 Environment Variable Value: 172.16.0.1 # TrueNAS default cluster gateway setting
+
+Environment Variable Name: TSD_TUN
+Environment Variable Value: tailscale0
+
+Environment Variable Name: TS_AUTH_KEY
+Environment Variable Value: *tskey-auth-exampleCNTRL-random*
+
+Environment Variable Name: TS_HOSTNAME
+Environment Variable Value: jf # Use the name you would like the machine be called on the tailnet
 
 # Networking
 ## Add external interface

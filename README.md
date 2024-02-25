@@ -1,8 +1,14 @@
 # This container connects to tailscale and runs a caddy web server. This is useful if you want to put a website on a LAN and a tailnet at the same time or reverse proxy web services in and out of a tailnet. When setting an IP address for a public DNS entry, use the machine's tailscale IP addresses.
 
-### A warning when using DuckDNS, the DNS challenge requires that the server be publicly accessible, so it cannot be used on a tailnet. I will leave in the plug-in as a way of hosting directly on the Internet.
+> ⚠️ Warning
+>
+> When using DuckDNS, the DNS challenge requires that the server be publicly accessible, so it cannot be used on a tailnet. I will leave in the plug-in as a way of hosting directly on the Internet.
 
-## It is highly recommended that you configure Tailscale before launching the container.
+## Configure Tailscale
+
+> ⚠️ Warning
+>
+> It is require to do this before you start the containers.
 
 https://login.tailscale.com/admin/dns Confirm a tailnet name, enable MagicDNS and HTTPS Certificates.
 
@@ -28,11 +34,21 @@ https://login.tailscale.com/admin/settings/keys Generate an auth key. I like to 
 
 ---
 
-## DNS overrides from your LAN DNS server are require to resolve service names on your LAN. Overrides also work nicely with public DNS records, as that allows the service to be resolved locally when on the LAN and over the tailnet when away from the LAN
+### DNS overrides
+
+> ⚠️ Warning
+>
+> These are require to resolve service names on your LAN. Overrides also work nicely with public DNS records, as that allows the service to be resolved locally when on the LAN and over the tailnet when away from the LAN.
 
 To set host overrides on OPNsense: https://docs.opnsense.org/manual/unbound.html#host-override-settings
 
-# Before exicuting the docker run command, create these two files and run the docker network create command. For docker compose, only create the two files:
+## Configuration files
+
+> ⚠️ Warning
+>
+> Before executing the docker run command, create these two files and run the docker network create command.
+>
+> Before executing the docker compose command, only create these two files:
 
 `.env`:
 
@@ -86,7 +102,7 @@ subdomain.dns-host.public-domain-name {
 
 Run `docker network create proxy-network` to create the proxy network.
 
-## An example docker run command:
+### An example docker run command (internal docker network):
 
 Docker command in Bash:
 
@@ -116,7 +132,7 @@ The `set -a` command block will load the enviromental variables onto the host an
 
 This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new contianer can be started and it will keep the same tailscale auth/caddy TLS data.
 
-## An example docker compose file:
+### An example docker compose file (internal docker network):
 
 `compose.yml`:
 
@@ -190,7 +206,7 @@ volumes:
 
 Run `docker-compose up`. This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network.
 
-# Host networking of the container
+## Host networking of the container
 
 > ⚠️ Warning
 >
@@ -208,7 +224,7 @@ To close the ports again on Fedora server, run:
 sudo firewall-cmd --permanent --remove-service=http && sudo firewall-cmd --permanent --remove-service=https
 ```
 
-## An example docker compose file:
+### An example docker compose file (host network):
 
 `compose.yml`:
 
@@ -249,9 +265,9 @@ volumes:
 >
 > Use `reverse_proxy localhost:`port to establish the connection.
 
-# TrueNAS SCALE settings
+## TrueNAS SCALE settings
 
-## TrueNAS SCALE Caddyfile Example
+### TrueNAS SCALE Caddyfile Example
 
 ```
 {
@@ -339,7 +355,7 @@ jf.DOMAIN-ALIAS.ts.net {
 
 Add extra IP addresses using spaces to allow `remote_ip` to access from tailnet devices or remove `private_ranges` to deny access to LAN devices. Example: `remote_ip private_ranges 100.X.X.X 100.X.X.Y` to add 2 tailnet devices. Remove the entry completely to allow access from any device that can resolve the DNS and has access to the servers IP addresses and HTTP/HTTPS ports.
 
-## TrueNAS SCALE docker settings
+### TrueNAS SCALE docker settings
 
 ```
 # Container Images
@@ -413,6 +429,8 @@ Add Capability: sys_module
 ```
 # Extra things to consider
 
-## OPNsense router settings that can cause issues
-
-If you are using public DNS entries for your tailnet machines, remove the `100.64.0.0/10` network from the Unbound DNS `Rebind protection networks` settings: https://docs.opnsense.org/manual/unbound.html#advanced
+> ⚠️ Warning
+>
+> Unbound DNS setting `Rebind protection networks` in OPNsense can cause issues if you are using public DNS entries for your tailnet machines.
+>
+> To remove the `100.64.0.0/10` network from the Unbound DNS `Rebind protection networks` settings go here: https://docs.opnsense.org/manual/unbound.html#advanced

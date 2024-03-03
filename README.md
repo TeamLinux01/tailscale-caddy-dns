@@ -14,7 +14,7 @@ https://login.tailscale.com/admin/dns Confirm a tailnet name, enable MagicDNS an
 
 https://login.tailscale.com/admin/acls/file Enable tags.
 
-This text is towards the top of the entry for ACLs normally, although it shouldn't matter exactly where it is; just make sure it isn't in the middle of another code block.
+This text is towards the top of the entry for ACLs normally, although it shouldn't matter exactly where it is; just make sure it isn't in the middle of another code block and that it is located in only the first `{`.
 
 ```
 	// Declare static groups of users. Use autogroups for all users or users with a specific role.
@@ -177,6 +177,7 @@ services:
 
       # Optional: Enable tailscaled and tailscale service. "true" value is included in the image.
       - TS_ENABLE=true
+      # Optional: Host name used on the tailnet. It will automatically be pulled from system if not provided.
       - TS_HOSTNAME=proxy
       # Optional only if TS_ENABLE is not set to "true". The Tailscale Auth key that is generated at https://login.tailscale.com/admin/settings/keys
       - TS_AUTH_KEY=${TS_AUTH_KEY}

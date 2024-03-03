@@ -173,7 +173,6 @@ services:
       - TSD_PORT=0
       # Optional: Extra arguments for tailscaled.
       - TSD_EXTRA_ARGS=
-      # Name that will show up on Tailnet.
 
       # Optional: Enable tailscaled and tailscale service. "true" value is included in the image.
       - TS_ENABLE=true

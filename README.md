@@ -14,8 +14,9 @@ https://login.tailscale.com/admin/dns Confirm a tailnet name, enable MagicDNS an
 
 https://login.tailscale.com/admin/acls/file Enable tags.
 
+This text is towards the top of the entry for ACLs normally, although it shouldn't matter exactly where it is; just make sure it isn't in the middle of another code block.
+
 ```
-...
 	// Declare static groups of users. Use autogroups for all users or users with a specific role.
 	"groups": {
 		"group:apps": [],
@@ -25,12 +26,11 @@ https://login.tailscale.com/admin/acls/file Enable tags.
 	"tagOwners": {
 		"tag:apps": ["group:apps"],
 	},
-...
 ```
 
 Groups aren't required, but nice if you want to apply other Access Control Lists to them.
 
-https://login.tailscale.com/admin/settings/keys Generate an auth key. I like to make it re-usable and add a tag, so the container machines don't expire and can be added easily.
+https://login.tailscale.com/admin/settings/keys Generate an Auth key. I like to make it re-usable and add a tag, so the container machines don't expire and can be added easily.
 
 ---
 
@@ -128,9 +128,9 @@ docker run --detach --rm \
   teamlinux01/tailscale-caddy-dns
 ```
 
-The `set -a` command block will load the enviromental variables onto the host and pass them into the container. If you don't want to set them via a file, just replace the `${}` text with the keys.
+The `set -a` command block will load the environmental variables onto the host and pass them into the container. If you don't want to set them via a file, just replace the `${}` text with the keys.
 
-This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new contianer can be started and it will keep the same tailscale auth/caddy TLS data.
+This will create a container that will join the tailnat with the name of `proxy` and have direct access to other containers that are part of the `proxy-network` docker network. The container will run in the background and be removed when `docker stop proxy` is run. The volumes will stay intact, so a new container can be started and it will keep the same tailscale Auth/caddy TLS data.
 
 ### An example docker compose file (internal docker network):
 
@@ -261,7 +261,7 @@ volumes:
 >
 > The tailscale-caddy-dns container will not be able to access other docker containers via the internal network, all containers will have to publish the ports they use.
 >
-> I recommend using `127.0.0.1:`port or `:::`port to publish only to the loopback address.
+> I recommend using `127.0.0.1:`port or `:::`port to publish only to the loop-back address.
 >
 > Use `reverse_proxy localhost:`port to establish the connection.
 

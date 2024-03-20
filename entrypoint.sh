@@ -2,6 +2,9 @@
 
 set -eux
 
+caddy -v
+tailscale --version
+
 if [ $OVERRIDE_DEFAULT_ROUTE = "true" ]; then
   ip route delete default
   ip route add default via $GATEWAY_IP dev $LAN_NIC

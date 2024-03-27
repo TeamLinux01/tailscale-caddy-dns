@@ -137,8 +137,6 @@ This will create a container that will join the tailnat with the name of `proxy`
 `compose.yml`:
 
 ```
-version: "3.8"
-
 networks:
   proxy-network:
     name: proxy-network
@@ -167,9 +165,9 @@ services:
       # Optional: Use if you are using on a TrueNAS SCALE system, the default Cluster gateway is "172.16.0.1".
       - TRUENAS_CLUSTER_GATEWAY_IP=
 
-      # TUN device name, or "userspace-networking" as a magic value to not use kernel support and do everything in-process. You can use "tailscale0" if the container has direct access to hardware. "userspace-networking" value is included in the image.
+      # Optional: TUN device name, or "userspace-networking" as a magic value to not use kernel support and do everything in-process. You can use "tailscale0" if the container has direct access to hardware. "userspace-networking" value is included in the image.
       - TSD_TUN=userspace-networking
-      # UDP port to listen on for peer-to-peer traffic; 0 means to auto-select. Port 41641 is the default that tailscaled will try to use. "0" value is included in the image.
+      # Optional: UDP port to listen on for peer-to-peer traffic; 0 means to auto-select. Port 41641 is the default that tailscaled will try to use. "0" value is included in the image.
       - TSD_PORT=0
       # Optional: Extra arguments for tailscaled.
       - TSD_EXTRA_ARGS=
@@ -178,7 +176,7 @@ services:
       - TS_ENABLE=true
       # Optional: Host name used on the tailnet. It will automatically be pulled from system if not provided.
       - TS_HOSTNAME=proxy
-      # Optional only if TS_ENABLE is not set to "true". The Tailscale Auth key that is generated at https://login.tailscale.com/admin/settings/keys
+      # Only needed if TS_ENABLE is set to "true". The Tailscale Auth key that is generated at https://login.tailscale.com/admin/settings/keys
       - TS_AUTH_KEY=${TS_AUTH_KEY}
       # Optional: Extra arguments for tailscale. Used for OAuth authentication.
       - TS_EXTRA_ARGS=

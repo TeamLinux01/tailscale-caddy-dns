@@ -2,7 +2,14 @@
 
 > ⚠️ Warning
 >
-> When using DuckDNS, the DNS challenge requires that the server be publicly accessible, so it cannot be used on a tailnet. I will leave in the plug-in as a way of hosting directly on the Internet.
+> When using DuckDNS, the DNS challenge requires that the server be publicly accessible, so it cannot be used on a tailnet. I will leave in the plug-in as a way of hosting di
+
+This container is built with extra dns plugins. These included:
+
+* Azure
+* Cloudflare
+* DuckDNS
+* Namecheap
 
 ## Configure Tailscale
 

@@ -37,6 +37,7 @@ ENV TS_ENABLE "true"
 ENV TS_HOSTNAME tailscale-caddy-dns
 ENV TS_AUTH_KEY="change_me"
 ENV TS_EXTRA_ARGS ""
+ENV SECRETS_FILENAME=""
 
 WORKDIR /srv
 

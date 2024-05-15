@@ -18,7 +18,13 @@ if [ $TS_ENABLE = "true" ]; then
   tailscale up --hostname=$TS_HOSTNAME --authkey=$TS_AUTH_KEY ${TS_EXTRA_ARGS}
 fi
 
+if [ $SECRETS_FILENAME = ""]; then
+caddy run \
+  --config /etc/caddy/Caddyfile \
+  --adapter caddyfile
+else
 caddy run \
   --config /etc/caddy/Caddyfile \
   --adapter caddyfile \
-  --watch
+  --envfile /run/secrets/${SECRETS_FILENAME}
+fi

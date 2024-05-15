@@ -1,4 +1,4 @@
 #!/bin/bash
 
 source image.env
-build bud -t $imageName .
+buildah bud -t $imageName .

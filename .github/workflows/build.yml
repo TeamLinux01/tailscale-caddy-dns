@@ -1,7 +1,10 @@
 name: ci
 
 on:
+  schedule:
+    - cron: '0 0 1,15 * *'
   push:
+  workflow_dispatch:
 
 jobs:
   docker:

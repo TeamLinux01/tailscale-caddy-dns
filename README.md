@@ -271,6 +271,9 @@ volumes:
 > Use `reverse_proxy localhost:`port to establish the connection.
 
 ## TrueNAS SCALE settings
+> ⚠️ Warning
+>
+> As TrueNAS SCALE "Dragonfish" 24.04, these examples have not been tested and may need to be re-written. TrueNAS SCALE now uses docker instead of kubernetes.
 
 ### TrueNAS SCALE Caddyfile Example
 

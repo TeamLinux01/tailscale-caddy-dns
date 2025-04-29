@@ -6,10 +6,8 @@
 
 This container is built with extra dns plugins. These included:
 
-* Azure
 * Cloudflare
 * DuckDNS
-* Namecheap
 
 ## Configure Tailscale
 
